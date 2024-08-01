@@ -1,3 +1,4 @@
+'use client';
 import Image from "next/image";
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -20,7 +21,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-'use client';
 import React, { useState, useEffect } from 'react';
 import {
   collection,
