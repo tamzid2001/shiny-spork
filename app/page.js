@@ -33,8 +33,6 @@ import {
   doc,
 } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
-import { initializeApp, firebase } from 'firebase/app';
-import { getFirestore, query, getDocs, collection, where, orderBy, addDoc, doc, getDoc, updateDoc, setDoc, limit, onSnapshot, arrayUnion, arrayRemove, serverTimestamp, deleteDoc } from "firebase/firestore";
 const db = getFirestore(app);
 
 export default function Home() {
