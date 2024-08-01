@@ -1,5 +1,4 @@
 'use client';
-import Image from "next/image";
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -20,7 +19,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 import React, { useState, useEffect } from 'react';
 import {
   collection,
@@ -71,9 +69,7 @@ export default function Home() {
       // Read total from itemsArr
       const calculateTotal = () => {
         const totalPrice = itemsArr.reduce(
-          (sum, item) => sum + parseFloat(item.price),
-          0
-        );
+          (sum, item) => sum + parseFloat(item.price), 0);
         setTotal(totalPrice);
       };
       calculateTotal();
