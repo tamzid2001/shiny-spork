@@ -41,13 +41,14 @@ const db = getFirestore(app);
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: "sk-uPADDs7cUgvkb6sI-ITE-VBJZDuIO-jtSPzVgdGMAAT3BlbkFJL6Cv1vz6Y9k61WA7bDlqr2eujBG93MiAV4r67ox7QA",
+  organization: "org-HddSU36eKpMV85ISCkmM5sRT",
+  apiKey: "sk-svcacct-25xxtSt0HU-KFsCgHhmkFS5be0zZLHOoJFm8r0Y_Ri9Bz2MAn3UT3BlbkFJ0m42-zrsesR0YEOLuHsE0nfAcznW9-tPJNb6BpiVvtJ1BQ-azXQA",
   dangerouslyAllowBrowser: true
 });
 
 const theme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
       main: '#4caf50',
     },
