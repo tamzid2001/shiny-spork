@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  onSnapshot,
-  deleteDoc,
-  doc,
-  updateDoc
-} from 'firebase/firestore';
+import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import axios from 'axios';
 
 const firebaseConfig = {
@@ -28,30 +19,16 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export default function Home() {
-  const [expenses, setExpenses] = useState([]);
-  const [newExpense, setNewExpense] = useState({ name: '', price: '' });
-  const [total, setTotal] = useState(0);
-  
   const [pantryItems, setPantryItems] = useState([]);
   const [newPantryItem, setNewPantryItem] = useState({ name: '', quantity: '' });
   const [search, setSearch] = useState('');
   const [image, setImage] = useState(null);
   const [recipes, setRecipes] = useState([]);
+  const [isCameraOn, setIsCameraOn] = useState(false);
   const videoRef = useRef(null);
 
   useEffect(() => {
-    const expensesQuery = query(collection(db, 'expenses'));
     const pantryQuery = query(collection(db, 'pantryItems'));
-
-    const unsubscribeExpenses = onSnapshot(expensesQuery, (querySnapshot) => {
-      let expensesArr = [];
-      querySnapshot.forEach((doc) => {
-        expensesArr.push({ ...doc.data(), id: doc.id });
-      });
-      setExpenses(expensesArr);
-      const totalPrice = expensesArr.reduce((sum, item) => sum + parseFloat(item.price), 0);
-      setTotal(totalPrice);
-    });
 
     const unsubscribePantry = onSnapshot(pantryQuery, (querySnapshot) => {
       let pantryArr = [];
@@ -61,26 +38,8 @@ export default function Home() {
       setPantryItems(pantryArr);
     });
 
-    return () => {
-      unsubscribeExpenses();
-      unsubscribePantry();
-    };
+    return () => unsubscribePantry();
   }, []);
-
-  const addExpense = async (e) => {
-    e.preventDefault();
-    if (newExpense.name !== '' && newExpense.price !== '') {
-      await addDoc(collection(db, 'expenses'), {
-        name: newExpense.name.trim(),
-        price: newExpense.price,
-      });
-      setNewExpense({ name: '', price: '' });
-    }
-  };
-
-  const deleteExpense = async (id) => {
-    await deleteDoc(doc(db, 'expenses', id));
-  };
 
   const addPantryItem = async (e) => {
     e.preventDefault();
@@ -98,12 +57,20 @@ export default function Home() {
     await deleteDoc(doc(db, 'pantryItems', id));
   };
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = stream;
-    } catch (err) {
-      console.error("Error accessing camera:", err);
+  const toggleCamera = async () => {
+    if (isCameraOn) {
+      const stream = videoRef.current.srcObject;
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop());
+      setIsCameraOn(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoRef.current.srcObject = stream;
+        setIsCameraOn(true);
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+      }
     }
   };
 
@@ -141,135 +108,112 @@ export default function Home() {
   );
 
   return (
-    <main className='flex min-h-screen flex-col items-center justify-between sm:p-24 p-4'>
-      <div className='z-10 w-full max-w-5xl items-center justify-between font-mono text-sm'>
-        <h1 className='text-4xl p-4 text-center'>Expense and Pantry Tracker</h1>
-        
-        {/* Expense Tracker Section */}
-        <div className='bg-slate-800 p-4 rounded-lg mb-8'>
-          <h2 className='text-2xl mb-4'>Expense Tracker</h2>
-          <form className='grid grid-cols-6 items-center text-black'>
-            <input
-              value={newExpense.name}
-              onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
-              className='col-span-3 p-3 border'
-              type='text'
-              placeholder='Enter Item'
-            />
-            <input
-              value={newExpense.price}
-              onChange={(e) => setNewExpense({ ...newExpense, price: e.target.value })}
-              className='col-span-2 p-3 border mx-3'
-              type='number'
-              placeholder='Enter $'
-            />
-            <button
-              onClick={addExpense}
-              className='text-white bg-slate-950 hover:bg-slate-900 p-3 text-xl'
-              type='submit'
-            >
-              +
-            </button>
-          </form>
-          <ul>
-            {expenses.map((item) => (
-              <li key={item.id} className='my-4 w-full flex justify-between bg-slate-950'>
-                <div className='p-4 w-full flex justify-between'>
-                  <span className='capitalize'>{item.name}</span>
-                  <span>${item.price}</span>
-                </div>
-                <button
-                  onClick={() => deleteExpense(item.id)}
-                  className='ml-8 p-4 border-l-2 border-slate-900 hover:bg-slate-900 w-16'
-                >
-                  X
-                </button>
-              </li>
-            ))}
-          </ul>
-          {expenses.length > 0 && (
-            <div className='flex justify-between p-3'>
-              <span>Total</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
-          )}
-        </div>
+    <main className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 text-white p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
+          Pantry Tracker
+        </h1>
 
-        {/* Pantry Tracker Section */}
-        <div className='bg-slate-800 p-4 rounded-lg'>
-          <h2 className='text-2xl mb-4'>Pantry Tracker</h2>
-          <form onSubmit={addPantryItem} className='grid grid-cols-6 items-center text-black mb-4'>
+        <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl mb-8">
+          <h2 className="text-3xl font-semibold mb-6">Pantry Items</h2>
+          <form onSubmit={addPantryItem} className="flex space-x-4 mb-6">
             <input
               value={newPantryItem.name}
               onChange={(e) => setNewPantryItem({ ...newPantryItem, name: e.target.value })}
-              className='col-span-3 p-3 border'
-              type='text'
-              placeholder='Item Name'
+              className="flex-grow bg-transparent border border-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text"
+              placeholder="Item Name"
             />
             <input
               value={newPantryItem.quantity}
               onChange={(e) => setNewPantryItem({ ...newPantryItem, quantity: e.target.value })}
-              className='col-span-2 p-3 border mx-3'
-              type='text'
-              placeholder='Quantity'
+              className="w-24 bg-transparent border border-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text"
+              placeholder="Qty"
             />
             <button
-              type='submit'
-              className='text-white bg-slate-950 hover:bg-slate-900 p-3 text-xl'
+              type="submit"
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
             >
-              +
+              Add
             </button>
           </form>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className='w-full p-3 border mb-4 text-black'
-            type='text'
-            placeholder='Search Items'
+            className="w-full bg-transparent border border-white rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="text"
+            placeholder="Search Items"
           />
-          <ul>
+          <ul className="space-y-4">
             {filteredPantryItems.map((item) => (
-              <li key={item.id} className='my-4 w-full flex justify-between bg-slate-950'>
-                <div className='p-4 w-full flex justify-between'>
-                  <span className='capitalize'>{item.name}</span>
+              <li key={item.id} className="flex items-center justify-between bg-white bg-opacity-5 rounded-lg p-4">
+                <span className="capitalize text-lg">{item.name}</span>
+                <div className="flex items-center space-x-4">
                   <input
-                    type='text'
+                    type="text"
                     value={item.quantity}
                     onChange={(e) => updatePantryItem(item.id, e.target.value)}
-                    className='w-20 bg-transparent border-b border-white'
+                    className="w-16 bg-transparent border border-white rounded-lg px-2 py-1 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  <button
+                    onClick={() => deletePantryItem(item.id)}
+                    className="text-red-500 hover:text-red-600 transition duration-300"
+                  >
+                    Delete
+                  </button>
                 </div>
-                <button
-                  onClick={() => deletePantryItem(item.id)}
-                  className='ml-8 p-4 border-l-2 border-slate-900 hover:bg-slate-900 w-16'
-                >
-                  X
-                </button>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Camera and Recipe Section */}
-        <div className='mt-8'>
-          <button onClick={startCamera} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2'>
-            Start Camera
-          </button>
-          <button onClick={captureImage} className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'>
-            Capture Image
-          </button>
-          <video ref={videoRef} style={{ display: 'none' }} autoPlay />
-          {image && <img src={image} alt="Captured" className='mt-4 max-w-full h-auto' />}
-          
-          <button onClick={suggestRecipes} className='mt-4 bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded'>
+        <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl mb-8">
+          <h2 className="text-3xl font-semibold mb-6">Camera and Image Classification</h2>
+          <div className="flex flex-col items-center space-y-4">
+            <button
+              onClick={toggleCamera}
+              className={`px-6 py-3 rounded-lg font-semibold transition duration-300 ${
+                isCameraOn
+                  ? 'bg-red-500 hover:bg-red-600'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              }`}
+            >
+              {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
+            </button>
+            {isCameraOn && (
+              <button
+                onClick={captureImage}
+                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-300"
+              >
+                Capture Image
+              </button>
+            )}
+            <video
+              ref={videoRef}
+              className={`w-full max-w-md rounded-lg ${isCameraOn ? 'block' : 'hidden'}`}
+              autoPlay
+            />
+            {image && (
+              <img src={image} alt="Captured" className="w-full max-w-md rounded-lg mt-4" />
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl">
+          <h2 className="text-3xl font-semibold mb-6">Recipe Suggestions</h2>
+          <button
+            onClick={suggestRecipes}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-300 mb-6"
+          >
             Suggest Recipes
           </button>
           {recipes.length > 0 && (
-            <div className='mt-4'>
-              <h3 className='text-xl font-bold'>Suggested Recipes:</h3>
-              <ul className='list-disc pl-5'>
+            <div>
+              <h3 className="text-2xl font-semibold mb-4">Suggested Recipes:</h3>
+              <ul className="list-disc pl-6 space-y-2">
                 {recipes.map((recipe, index) => (
-                  <li key={index}>{recipe}</li>
+                  <li key={index} className="text-lg">{recipe}</li>
                 ))}
               </ul>
             </div>
