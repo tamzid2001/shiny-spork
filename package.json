@@ -15,6 +15,7 @@
     "axios": "^1.7.2",
     "firebase": "^10.12.4",
     "next": "14.2.5",
+    "openai": "^4.53.2",
     "react": "^18",
     "react-dom": "^18",
     "requests": "^0.3.0"
