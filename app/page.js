@@ -24,6 +24,7 @@ import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey: "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",
 });
+
 export default function Home() {
   const [pantryItems, setPantryItems] = useState([]);
   const [newPantryItem, setNewPantryItem] = useState({ name: '', quantity: '' });
