@@ -9,7 +9,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import process from 'process';
-
+console.log(process.env.OPENAI_KEY);
+console.log(process.env.OPENAI_API_KEY);
 const firebaseConfig = {
   apiKey: "AIzaSyCN8oEO-YI10wiMsKfHghXkJn1LBsEzhOw",
   authDomain: "pantry-8dcb7.firebaseapp.com",
@@ -26,7 +27,7 @@ const db = getFirestore(app);
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
 });
 
