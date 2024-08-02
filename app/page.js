@@ -25,7 +25,7 @@ const db = getFirestore(app);
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: "sk-svcacct-25xxtSt0HU-KFsCgHhmkFS5be0zZLHOoJFm8r0Y_Ri9Bz2MAn3UT3BlbkFJ0m42-zrsesR0YEOLuHsE0nfAcznW9-tPJNb6BpiVvtJ1BQ-azXQA",
+  apiKey: process.env.OPENAI_KEY,
   dangerouslyAllowBrowser: true
 });
 
