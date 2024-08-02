@@ -3,7 +3,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import axios from 'axios';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { 
+  CssBaseline, 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Container, 
+  TextField, 
+  Button, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  IconButton, 
+  Card, 
+  CardContent, 
+  Grid,
+  Box
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCN8oEO-YI10wiMsKfHghXkJn1LBsEzhOw",
@@ -18,12 +38,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Initialize OpenAI API
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: "sk-uPADDs7cUgvkb6sI-ITE-VBJZDuIO-jtSPzVgdGMAAT3BlbkFJL6Cv1vz6Y9k61WA7bDlqr2eujBG93MiAV4r67ox7QA",
   dangerouslyAllowBrowser: true
+});
+
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#4caf50',
+    },
+    secondary: {
+      main: '#9c27b0',
+    },
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+    },
+  },
 });
 
 export default function Home() {
@@ -143,120 +178,150 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
-          Pantry Tracker
-        </h1>
-
-        <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl mb-8">
-          <h2 className="text-3xl font-semibold mb-6">Pantry Items</h2>
-          <form onSubmit={addPantryItem} className="flex space-x-4 mb-6">
-            <input
-              value={newPantryItem.name}
-              onChange={(e) => setNewPantryItem({ ...newPantryItem, name: e.target.value })}
-              className="flex-grow bg-transparent border border-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              type="text"
-              placeholder="Item Name"
-            />
-            <input
-              value={newPantryItem.quantity}
-              onChange={(e) => setNewPantryItem({ ...newPantryItem, quantity: e.target.value })}
-              className="w-24 bg-transparent border border-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              type="text"
-              placeholder="Qty"
-            />
-            <button
-              type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
-            >
-              Add
-            </button>
-          </form>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent border border-white rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="text"
-            placeholder="Search Items"
-          />
-          <ul className="space-y-4">
-            {filteredPantryItems.map((item) => (
-              <li key={item.id} className="flex items-center justify-between bg-white bg-opacity-5 rounded-lg p-4">
-                <span className="capitalize text-lg">{item.name}</span>
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="text"
-                    value={item.quantity}
-                    onChange={(e) => updatePantryItem(item.id, e.target.value)}
-                    className="w-16 bg-transparent border border-white rounded-lg px-2 py-1 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Pantry Tracker
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" component="div" gutterBottom>
+                  Pantry Items
+                </Typography>
+                <Box component="form" onSubmit={addPantryItem} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    label="Item Name"
+                    variant="outlined"
+                    value={newPantryItem.name}
+                    onChange={(e) => setNewPantryItem({ ...newPantryItem, name: e.target.value })}
+                    fullWidth
                   />
-                  <button
-                    onClick={() => deletePantryItem(item.id)}
-                    className="text-red-500 hover:text-red-600 transition duration-300"
+                  <TextField
+                    label="Quantity"
+                    variant="outlined"
+                    value={newPantryItem.quantity}
+                    onChange={(e) => setNewPantryItem({ ...newPantryItem, quantity: e.target.value })}
+                    sx={{ width: '100px' }}
+                  />
+                  <Button type="submit" variant="contained" color="primary">
+                    Add
+                  </Button>
+                </Box>
+                <TextField
+                  label="Search Items"
+                  variant="outlined"
+                  fullWidth
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <List>
+                  {filteredPantryItems.map((item) => (
+                    <ListItem
+                      key={item.id}
+                      secondaryAction={
+                        <IconButton edge="end" aria-label="delete" onClick={() => deletePantryItem(item.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      }
+                    >
+                      <ListItemText primary={item.name} />
+                      <TextField
+                        value={item.quantity}
+                        onChange={(e) => updatePantryItem(item.id, e.target.value)}
+                        variant="outlined"
+                        size="small"
+                        sx={{ width: '80px', mr: 2 }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" component="div" gutterBottom>
+                  Camera and Image Classification
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <Button
+                    variant="contained"
+                    color={isCameraOn ? "secondary" : "primary"}
+                    onClick={toggleCamera}
+                    startIcon={<CameraAltIcon />}
                   >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl mb-8">
-          <h2 className="text-3xl font-semibold mb-6">Camera and Image Classification</h2>
-          <div className="flex flex-col items-center space-y-4">
-            <button
-              onClick={toggleCamera}
-              className={`px-6 py-3 rounded-lg font-semibold transition duration-300 ${
-                isCameraOn
-                  ? 'bg-red-500 hover:bg-red-600'
-                  : 'bg-blue-500 hover:bg-blue-600'
-              }`}
-            >
-              {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
-            </button>
-            {isCameraOn && (
-              <button
-                onClick={captureImage}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-300"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Processing...' : 'Capture Image'}
-              </button>
-            )}
-            <video
-              ref={videoRef}
-              className={`w-full max-w-md rounded-lg ${isCameraOn ? 'block' : 'hidden'}`}
-              autoPlay
-            />
-            {image && (
-              <img src={image} alt="Captured" className="w-full max-w-md rounded-lg mt-4" />
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl">
-          <h2 className="text-3xl font-semibold mb-6">Recipe Suggestions</h2>
-          <button
-            onClick={suggestRecipes}
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-300 mb-6"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Generating Recipes...' : 'Suggest Recipes'}
-          </button>
-          {recipes.length > 0 && (
-            <div>
-              <h3 className="text-2xl font-semibold mb-4">Suggested Recipes:</h3>
-              <ul className="list-disc pl-6 space-y-2">
-                {recipes.map((recipe, index) => (
-                  <li key={index} className="text-lg">{recipe}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
+                    {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
+                  </Button>
+                  {isCameraOn && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={captureImage}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Processing...' : 'Capture Image'}
+                    </Button>
+                  )}
+                  <Box sx={{ width: '100%', maxWidth: '300px', overflow: 'hidden' }}>
+                    <video
+                      ref={videoRef}
+                      style={{ display: isCameraOn ? 'block' : 'none', width: '100%', height: 'auto' }}
+                      autoPlay
+                    />
+                  </Box>
+                  {image && (
+                    <Box sx={{ width: '100%', maxWidth: '300px', overflow: 'hidden' }}>
+                      <img src={image} alt="Captured" style={{ width: '100%', height: 'auto' }} />
+                    </Box>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" component="div" gutterBottom>
+                  Recipe Suggestions
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={suggestRecipes}
+                  disabled={isLoading}
+                  startIcon={<RestaurantIcon />}
+                  sx={{ mb: 2 }}
+                >
+                  {isLoading ? 'Generating Recipes...' : 'Suggest Recipes'}
+                </Button>
+                {recipes.length > 0 && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom>
+                      Suggested Recipes:
+                    </Typography>
+                    <List>
+                      {recipes.map((recipe, index) => (
+                        <ListItem key={index}>
+                          <ListItemText primary={recipe} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Container>
+    </ThemeProvider>
   );
 }
