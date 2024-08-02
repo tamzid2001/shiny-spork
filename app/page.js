@@ -4,23 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { 
-  CssBaseline, 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Container, 
-  TextField, 
-  Button, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  IconButton, 
-  Card, 
-  CardContent, 
-  Grid,
-  Box
-} from '@mui/material';
+import { CssBaseline, AppBar, Toolbar, Typography, Container, TextField, Button, List, ListItem, ListItemText, IconButton, Card, CardContent, Grid, Box} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
