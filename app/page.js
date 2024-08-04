@@ -116,23 +116,19 @@ export default function Home() {
 
   const classifyImage = async (imageDataUrl) => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4-vision-preview",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "What item is in this image? Please respond with just the name of the item." },
-              { type: "image_url", image_url: { url: imageDataUrl } }
-            ],
-          },
-        ],
-      });
-      const classification = response.choices[0].message.content.trim();
-      setNewPantryItem({ name: classification, quantity: '1' });
+      const response = await axios.post('https://askatlas.org/api/classify-image', { image: imageDataUrl });
+      const classification = response.data.classification;
+      if (classification) {
+        setNewPantryItem({ name: classification, quantity: '1' });
+        await addDoc(collection(db, 'pantryItems'), { name: classification, quantity: '1' });
+      } else {
+        setError("Couldn't classify the image. Please try again.");
+      }
     } catch (err) {
       console.error("Error classifying image:", err);
+      setError("Failed to classify image. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -140,20 +136,14 @@ export default function Home() {
 
   const suggestRecipes = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const ingredients = pantryItems.map(item => item.name).join(', ');
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "You are a helpful cooking assistant." },
-          { role: "user", content: `Suggest 3 recipes using some or all of these ingredients: ${ingredients}. Please format each recipe as a bullet point.` }
-        ],
-      });
-      const recipeText = response.choices[0].message.content;
-      const recipeList = recipeText.split('\n').filter(line => line.trim().startsWith('•'));
-      setRecipes(recipeList);
+      const response = await axios.post('https://askatlas.org/api/suggest-recipes', { ingredients });
+      setRecipes(response.data.recipes);
     } catch (err) {
       console.error("Error suggesting recipes:", err);
+      setError("Failed to suggest recipes. Please try again later.");
     } finally {
       setIsLoading(false);
     }
