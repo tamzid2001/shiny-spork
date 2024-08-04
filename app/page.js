@@ -118,7 +118,7 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post('https://askatlas.org/api/classify-image', { image: imageDataUrl });
+      const response = await axios.post('/api/classify-image', { image: imageDataUrl });
       const classification = response.data.classification;
       if (classification) {
         setNewPantryItem({ name: classification, quantity: '1' });
@@ -128,7 +128,6 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Error classifying image:", err);
-      setError("Failed to classify image. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -139,11 +138,10 @@ export default function Home() {
     setError(null);
     try {
       const ingredients = pantryItems.map(item => item.name).join(', ');
-      const response = await axios.post('https://askatlas.org/api/suggest-recipes', { ingredients });
+      const response = await axios.post('/api/suggest-recipes', { ingredients });
       setRecipes(response.data.recipes);
     } catch (err) {
       console.error("Error suggesting recipes:", err);
-      setError("Failed to suggest recipes. Please try again later.");
     } finally {
       setIsLoading(false);
     }
